@@ -74,7 +74,7 @@ export type SavedDraftPost = {
   publishDate: string;
   publishTime: string;
   timezone: string;
-  status: "draft" | "pending_approval" | "scheduled";
+  status: "draft" | "pending_approval" | "approved" | "scheduled" | "rejected" | "cancelled";
   media: SavedDraftMedia[];
   createdAt: string;
   updatedAt: string;

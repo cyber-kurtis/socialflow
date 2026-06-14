@@ -1,4 +1,4 @@
-import { DraftsList } from "@/components/drafts/drafts-list";
+import { SavedPostsList } from "@/components/posts/saved-posts-list";
 
 export default function DraftsPage() {
   return (
@@ -13,7 +13,11 @@ export default function DraftsPage() {
           kayıtlar bu tarayıcıda tutulur.
         </p>
       </div>
-      <DraftsList />
+      <SavedPostsList
+        statuses={["draft", "rejected", "cancelled"]}
+        emptyTitle="Henüz taslak yok"
+        emptyDescription="Yeni gönderi ekranında gerçek bilgileri girip Taslak kaydet dediğinizde içerikler burada listelenir."
+      />
     </div>
   );
 }

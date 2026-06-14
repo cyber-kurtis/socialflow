@@ -1,14 +1,22 @@
-import { CheckSquare } from "lucide-react";
-import { PlaceholderPage } from "@/components/common/placeholder-page";
+import { SavedPostsList } from "@/components/posts/saved-posts-list";
 
 export default function ApprovalsPage() {
   return (
-    <PlaceholderPage
-      icon={CheckSquare}
-      eyebrow="Onay akışı"
-      title="Onay bekleyen içerikler"
-      description="Onay yetkililerinin inceleme, revizyon isteme veya reddetme işlemleri için temel ekran."
-      items={["Onayla", "Revizyon iste", "Reddet", "Yorum ekle"]}
-    />
+    <div className="space-y-6">
+      <div>
+        <p className="text-sm font-medium text-brand-600">Onay akışı</p>
+        <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
+          Onay bekleyen içerikler
+        </h1>
+        <p className="mt-1 max-w-2xl text-sm text-slate-600">
+          Onaya gönderilen içerikleri inceleyin, onaylayın, programlayın veya reddedin.
+        </p>
+      </div>
+      <SavedPostsList
+        statuses={["pending_approval", "approved"]}
+        emptyTitle="Onay bekleyen içerik yok"
+        emptyDescription="Yeni gönderi ekranında Onaya gönder dediğiniz içerikler burada görünür."
+      />
+    </div>
   );
 }

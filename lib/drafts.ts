@@ -95,3 +95,18 @@ export function saveDraft(input: DraftInput) {
 export function deleteDraft(id: string) {
   writeDrafts(readDrafts().filter((draft) => draft.id !== id));
 }
+
+export function updateDraftStatus(id: string, status: SavedDraftPost["status"]) {
+  const now = new Date().toISOString();
+  const next = readDrafts().map((draft) =>
+    draft.id === id
+      ? {
+          ...draft,
+          status,
+          updatedAt: now,
+        }
+      : draft,
+  );
+
+  writeDrafts(next);
+}
