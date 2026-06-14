@@ -96,6 +96,8 @@ export function RealDetailsForm() {
       userName: settings.userName.trim(),
       userInitials: settings.userInitials.trim() || makeInitials(settings.userName),
       timezone: settings.timezone,
+      supabaseUrl: settings.supabaseUrl.trim(),
+      supabaseAnonKey: settings.supabaseAnonKey.trim(),
       socialAccounts: cleanedAccounts,
     };
 
@@ -167,6 +169,37 @@ export function RealDetailsForm() {
       </section>
 
       <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-panel">
+        <div>
+          <h2 className="text-base font-semibold text-slate-950">Supabase bağlantı hazırlığı</h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Supabase Project URL ve anon public key değerlerini buraya ekleyin. Service role key
+            burada kullanılmaz ve tarayıcıya konmaz.
+          </p>
+        </div>
+
+        <div className="mt-5 grid gap-4 md:grid-cols-2">
+          <label className="block">
+            <span className="text-sm font-medium text-slate-700">Supabase Project URL</span>
+            <input
+              className="focus-ring mt-1 w-full rounded-md border-slate-200"
+              value={settings.supabaseUrl}
+              onChange={(event) => updateSetting("supabaseUrl", event.target.value)}
+              placeholder="https://xxxxx.supabase.co"
+            />
+          </label>
+          <label className="block">
+            <span className="text-sm font-medium text-slate-700">Supabase anon public key</span>
+            <input
+              className="focus-ring mt-1 w-full rounded-md border-slate-200"
+              value={settings.supabaseAnonKey}
+              onChange={(event) => updateSetting("supabaseAnonKey", event.target.value)}
+              placeholder="eyJhbGciOi..."
+            />
+          </label>
+        </div>
+      </section>
+
+      <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-panel">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-base font-semibold text-slate-950">Instagram hesapları</h2>
@@ -186,7 +219,10 @@ export function RealDetailsForm() {
 
         <div className="mt-5 grid gap-4">
           {settings.socialAccounts.map((account, index) => (
-            <div key={account.id} className="grid gap-3 rounded-lg border border-slate-200 p-4 md:grid-cols-[1fr_1fr_1fr_auto]">
+            <div
+              key={account.id}
+              className="grid gap-3 rounded-lg border border-slate-200 p-4 md:grid-cols-[1fr_1fr_1fr_auto]"
+            >
               <label className="block">
                 <span className="text-sm font-medium text-slate-700">Marka adı</span>
                 <input

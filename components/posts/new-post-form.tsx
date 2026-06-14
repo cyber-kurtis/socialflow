@@ -12,6 +12,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { getUsableAccounts, readAppSettings } from "@/lib/app-settings";
+import { saveDraft } from "@/lib/drafts";
 import { simulatePublishing } from "@/lib/mock-publishing";
 import type { MockPublishResult, PostType, SocialAccount, UploadedMedia } from "@/lib/types";
 import { cn } from "@/lib/ui";
@@ -179,8 +180,35 @@ export function NewPostForm({ accounts }: NewPostFormProps) {
     setIsPublishing(false);
   }
 
-  function handleAction(action: string) {
-    setSubmitState(action);
+  function handleAction(status: "draft" | "pending_approval" | "scheduled") {
+    if (!selectedAccount) {
+      setSubmitState("Önce Ayarlar bölümünden bir Instagram hesabı ekleyin");
+      window.setTimeout(() => setSubmitState(null), 2600);
+      return;
+    }
+
+    const draft = saveDraft({
+      title: form.title,
+      account: selectedAccount,
+      postType: form.postType,
+      caption: form.caption,
+      hashtags: form.hashtags,
+      firstComment: form.firstComment,
+      publishDate: form.publishDate,
+      publishTime: form.publishTime,
+      timezone: form.timezone,
+      status,
+      mediaItems: orderedMedia,
+    });
+
+    const message =
+      status === "draft"
+        ? "Taslak kaydedildi"
+        : status === "pending_approval"
+          ? "Gönderi onay bekleyenlere kaydedildi"
+          : "Gönderi programlandı";
+
+    setSubmitState(`${message}: ${draft.title}`);
     window.setTimeout(() => setSubmitState(null), 2200);
   }
 
@@ -380,14 +408,14 @@ export function NewPostForm({ accounts }: NewPostFormProps) {
           <button
             type="button"
             className="focus-ring rounded-md border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-            onClick={() => handleAction("Taslak kaydedildi")}
+            onClick={() => handleAction("draft")}
           >
             Taslak kaydet
           </button>
           <button
             type="button"
             className="focus-ring inline-flex items-center gap-2 rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
-            onClick={() => handleAction("Gönderi onaya gönderildi")}
+            onClick={() => handleAction("pending_approval")}
           >
             <Send className="h-4 w-4" aria-hidden="true" />
             Onaya gönder
@@ -395,7 +423,7 @@ export function NewPostForm({ accounts }: NewPostFormProps) {
           <button
             type="button"
             className="focus-ring inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
-            onClick={() => handleAction("Gönderi programlandı")}
+            onClick={() => handleAction("scheduled")}
           >
             <CalendarClock className="h-4 w-4" aria-hidden="true" />
             Programla

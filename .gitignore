@@ -13,3 +13,4 @@ pnpm-debug.log*
 tsconfig.tsbuildinfo
 tree-elements.json
 __push_copy_*
+*.zip

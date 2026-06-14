@@ -5,6 +5,8 @@ export type AppSettings = {
   userName: string;
   userInitials: string;
   timezone: string;
+  supabaseUrl: string;
+  supabaseAnonKey: string;
   socialAccounts: SocialAccount[];
 };
 
@@ -15,6 +17,8 @@ export const defaultAppSettings: AppSettings = {
   userName: "",
   userInitials: "",
   timezone: "Europe/Istanbul",
+  supabaseUrl: "",
+  supabaseAnonKey: "",
   socialAccounts: [],
 };
 

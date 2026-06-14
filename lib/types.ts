@@ -55,6 +55,31 @@ export type UploadedMedia = {
   mediaType: "image" | "video";
 };
 
+export type SavedDraftMedia = {
+  id: string;
+  fileName: string;
+  fileSize: number;
+  mediaType: "image" | "video";
+  sortOrder: number;
+};
+
+export type SavedDraftPost = {
+  id: string;
+  title: string;
+  account: SocialAccount;
+  postType: PostType;
+  caption: string;
+  hashtags: string;
+  firstComment: string;
+  publishDate: string;
+  publishTime: string;
+  timezone: string;
+  status: "draft" | "pending_approval" | "scheduled";
+  media: SavedDraftMedia[];
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type MockPublishResult = {
   status: "published" | "failed";
   externalPostId?: string;
