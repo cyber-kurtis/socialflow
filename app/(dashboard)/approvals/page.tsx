@@ -9,7 +9,8 @@ export default function ApprovalsPage() {
           Onay bekleyen içerikler
         </h1>
         <p className="mt-1 max-w-2xl text-sm text-slate-600">
-          Onaya gönderilen içerikleri inceleyin, onaylayın, programlayın veya reddedin.
+          Onaya gönderilen içerikleri inceleyin, onaylayın, revizyon isteyin, programlayın veya
+          reddedin.
         </p>
       </div>
       <SavedPostsList

@@ -5,29 +5,40 @@ import Link from "next/link";
 import {
   CalendarClock,
   CheckCircle2,
+  ExternalLink,
   FileText,
+  Loader2,
   Send,
+  Sparkles,
   Trash2,
   XCircle,
 } from "lucide-react";
-import { deleteDraft, readDrafts, updateDraftStatus } from "@/lib/drafts";
-import type { SavedDraftPost } from "@/lib/types";
+import { deleteDraft, readDrafts, simulateDraftPublishing, updateDraftStatus } from "@/lib/drafts";
+import type { PostStatus, SavedDraftPost } from "@/lib/types";
 import { cn } from "@/lib/ui";
 
-const statusLabels: Record<SavedDraftPost["status"], string> = {
+const statusLabels: Record<PostStatus, string> = {
   draft: "Taslak",
   pending_approval: "Onay bekliyor",
+  revision_requested: "Revizyon istendi",
   approved: "Onaylandı",
   scheduled: "Programlandı",
+  publishing: "Yayında",
+  published: "Yayımlandı",
+  failed: "Başarısız",
   rejected: "Reddedildi",
   cancelled: "İptal edildi",
 };
 
-const statusClasses: Record<SavedDraftPost["status"], string> = {
+const statusClasses: Record<PostStatus, string> = {
   draft: "bg-slate-100 text-slate-700",
   pending_approval: "bg-amber-50 text-amber-700",
+  revision_requested: "bg-orange-50 text-orange-700",
   approved: "bg-emerald-50 text-emerald-700",
   scheduled: "bg-brand-50 text-brand-700",
+  publishing: "bg-indigo-50 text-indigo-700",
+  published: "bg-emerald-50 text-emerald-700",
+  failed: "bg-rose-50 text-rose-700",
   rejected: "bg-rose-50 text-rose-700",
   cancelled: "bg-slate-100 text-slate-500",
 };
@@ -35,11 +46,12 @@ const statusClasses: Record<SavedDraftPost["status"], string> = {
 type SavedPostsListProps = {
   emptyDescription: string;
   emptyTitle: string;
-  statuses?: SavedDraftPost["status"][];
+  statuses?: PostStatus[];
 };
 
 export function SavedPostsList({ emptyDescription, emptyTitle, statuses }: SavedPostsListProps) {
   const [posts, setPosts] = useState<SavedDraftPost[]>([]);
+  const [publishingIds, setPublishingIds] = useState<string[]>([]);
 
   useEffect(() => {
     function refreshDrafts() {
@@ -73,8 +85,15 @@ export function SavedPostsList({ emptyDescription, emptyTitle, statuses }: Saved
     refresh();
   }
 
-  function handleStatus(id: string, status: SavedDraftPost["status"]) {
+  function handleStatus(id: string, status: PostStatus) {
     updateDraftStatus(id, status);
+    refresh();
+  }
+
+  async function handleSimulate(id: string) {
+    setPublishingIds((current) => [...current, id]);
+    await simulateDraftPublishing(id);
+    setPublishingIds((current) => current.filter((item) => item !== id));
     refresh();
   }
 
@@ -131,6 +150,24 @@ export function SavedPostsList({ emptyDescription, emptyTitle, statuses }: Saved
                   {post.publishDate || "Tarih yok"} · {post.publishTime || "Saat yok"}
                 </span>
               </div>
+
+              {(post.externalPostUrl || post.failureReason || post.activityLogMessage) && (
+                <div className="mt-3 rounded-md bg-slate-50 p-3 text-xs text-slate-600">
+                  {post.externalPostUrl && (
+                    <a
+                      href={post.externalPostUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 font-medium text-brand-700 hover:text-brand-800"
+                    >
+                      Mock Instagram linki
+                      <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                    </a>
+                  )}
+                  {post.failureReason && <p className="text-rose-700">{post.failureReason}</p>}
+                  {post.activityLogMessage && <p className="mt-1">{post.activityLogMessage}</p>}
+                </div>
+              )}
             </div>
 
             <div className="flex flex-wrap items-center gap-2 xl:justify-end">
@@ -174,6 +211,13 @@ export function SavedPostsList({ emptyDescription, emptyTitle, statuses }: Saved
                   </button>
                   <button
                     type="button"
+                    className="focus-ring inline-flex items-center gap-2 rounded-md border border-amber-200 px-3 py-2 text-sm font-medium text-amber-700 hover:bg-amber-50"
+                    onClick={() => handleStatus(post.id, "revision_requested")}
+                  >
+                    Revizyon iste
+                  </button>
+                  <button
+                    type="button"
                     className="focus-ring inline-flex items-center gap-2 rounded-md border border-rose-200 px-3 py-2 text-sm font-medium text-rose-700 hover:bg-rose-50"
                     onClick={() => handleStatus(post.id, "rejected")}
                   >
@@ -186,11 +230,27 @@ export function SavedPostsList({ emptyDescription, emptyTitle, statuses }: Saved
               {post.status === "approved" && (
                 <button
                   type="button"
-                  className="focus-ring inline-flex items-center gap-2 rounded-md bg-brand-600 px-3 py-2 text-sm font-medium text-white hover:bg-brand-700"
+                  className="focus-ring inline-flex items-center gap-2 rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800"
                   onClick={() => handleStatus(post.id, "scheduled")}
                 >
                   <CalendarClock className="h-4 w-4" aria-hidden="true" />
                   Programla
+                </button>
+              )}
+
+              {(post.status === "approved" || post.status === "scheduled" || post.status === "failed") && (
+                <button
+                  type="button"
+                  className="focus-ring inline-flex items-center gap-2 rounded-md bg-brand-600 px-3 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-70"
+                  onClick={() => handleSimulate(post.id)}
+                  disabled={publishingIds.includes(post.id)}
+                >
+                  {publishingIds.includes(post.id) ? (
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                  ) : (
+                    <Sparkles className="h-4 w-4" aria-hidden="true" />
+                  )}
+                  Yayını simüle et
                 </button>
               )}
 
@@ -201,6 +261,16 @@ export function SavedPostsList({ emptyDescription, emptyTitle, statuses }: Saved
                   onClick={() => handleStatus(post.id, "cancelled")}
                 >
                   İptal et
+                </button>
+              )}
+
+              {post.status === "revision_requested" && (
+                <button
+                  type="button"
+                  className="focus-ring inline-flex items-center gap-2 rounded-md border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                  onClick={() => handleStatus(post.id, "draft")}
+                >
+                  Taslağa al
                 </button>
               )}
 

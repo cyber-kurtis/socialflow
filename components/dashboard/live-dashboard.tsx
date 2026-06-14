@@ -13,10 +13,11 @@ import { StatusDistribution } from "@/components/dashboard/status-distribution";
 import { readDrafts } from "@/lib/drafts";
 import type { SavedDraftPost, StatusDistributionItem } from "@/lib/types";
 
-const emptyDistribution: StatusDistributionItem[] = [
+const distributionTemplate: StatusDistributionItem[] = [
   { status: "draft", label: "Taslak", count: 0, colorClass: "bg-slate-500" },
   { status: "pending_approval", label: "Onay bekleyen", count: 0, colorClass: "bg-amber-500" },
   { status: "scheduled", label: "Programlı", count: 0, colorClass: "bg-brand-500" },
+  { status: "publishing", label: "Yayında", count: 0, colorClass: "bg-indigo-500" },
   { status: "published", label: "Yayımlandı", count: 0, colorClass: "bg-emerald-500" },
   { status: "failed", label: "Başarısız", count: 0, colorClass: "bg-rose-500" },
 ];
@@ -42,24 +43,22 @@ export function LiveDashboard() {
   const stats = useMemo(() => {
     const scheduled = posts.filter((post) => post.status === "scheduled").length;
     const pending = posts.filter((post) => post.status === "pending_approval").length;
-    const approved = posts.filter((post) => post.status === "approved").length;
-    const rejected = posts.filter((post) => post.status === "rejected").length;
+    const published = posts.filter((post) => post.status === "published").length;
+    const failed = posts.filter((post) => post.status === "failed").length;
 
-    return { scheduled, pending, approved, rejected };
+    return { scheduled, pending, published, failed };
   }, [posts]);
 
   const distribution = useMemo<StatusDistributionItem[]>(() => {
-    return emptyDistribution.map((item) => ({
+    return distributionTemplate.map((item) => ({
       ...item,
-      count:
-        item.status === "published" || item.status === "failed"
-          ? 0
-          : posts.filter((post) => post.status === item.status).length,
+      count: posts.filter((post) => post.status === item.status).length,
     }));
   }, [posts]);
 
   const upcoming = posts
     .filter((post) => post.status === "scheduled")
+    .sort((a, b) => `${a.publishDate} ${a.publishTime}`.localeCompare(`${b.publishDate} ${b.publishTime}`))
     .slice(0, 5);
 
   return (
@@ -71,7 +70,7 @@ export function LiveDashboard() {
             Dashboard
           </h1>
           <p className="mt-1 text-sm text-slate-600">
-            Hazırladığınız gerçek gönderi kayıtlarının güncel özeti.
+            Hazırladığınız gönderi kayıtlarının güncel özeti.
           </p>
         </div>
         <div className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 shadow-panel">
@@ -93,18 +92,18 @@ export function LiveDashboard() {
           helper="İnceleme bekleyen içerikler"
         />
         <MetricCard
-          icon={AlertTriangle}
-          label="Reddedilen"
-          value={stats.rejected}
-          helper="Yeniden ele alınacak içerikler"
-          tone="danger"
+          icon={CheckCircle2}
+          label="Bu ay yayımlanan"
+          value={stats.published}
+          helper="Simülasyonla başarılı olanlar"
+          tone="success"
         />
         <MetricCard
-          icon={CheckCircle2}
-          label="Onaylanan"
-          value={stats.approved}
-          helper="Programlanmaya hazır içerikler"
-          tone="success"
+          icon={AlertTriangle}
+          label="Başarısız"
+          value={stats.failed}
+          helper="Tekrar denenmesi gerekenler"
+          tone="danger"
         />
       </section>
 

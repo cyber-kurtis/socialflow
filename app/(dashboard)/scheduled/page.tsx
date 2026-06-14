@@ -9,11 +9,12 @@ export default function ScheduledPage() {
           Programlanmış içerikler
         </h1>
         <p className="mt-1 max-w-2xl text-sm text-slate-600">
-          Programlanan gönderileri yayın tarihi, saat ve hesap bilgisiyle takip edin.
+          Programlanan gönderileri yayın tarihi, saat ve hesap bilgisiyle takip edin. Hazır olan
+          gönderilerde test amaçlı yayın simülasyonu çalıştırabilirsiniz.
         </p>
       </div>
       <SavedPostsList
-        statuses={["scheduled"]}
+        statuses={["scheduled", "publishing", "failed"]}
         emptyTitle="Programlanmış içerik yok"
         emptyDescription="Yeni gönderi ekranında Programla dediğiniz veya onay ekranından programladığınız içerikler burada görünür."
       />

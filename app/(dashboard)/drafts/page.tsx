@@ -9,12 +9,12 @@ export default function DraftsPage() {
           Taslaklar ve kayıtlı gönderiler
         </h1>
         <p className="mt-1 max-w-2xl text-sm text-slate-600">
-          Hazırladığınız gerçek gönderi bilgileri burada saklanır. Supabase bağlantısı gelene kadar
+          Hazırladığınız gönderi bilgileri burada saklanır. Supabase bağlantısı gelene kadar
           kayıtlar bu tarayıcıda tutulur.
         </p>
       </div>
       <SavedPostsList
-        statuses={["draft", "rejected", "cancelled"]}
+        statuses={["draft", "revision_requested", "rejected", "cancelled"]}
         emptyTitle="Henüz taslak yok"
         emptyDescription="Yeni gönderi ekranında gerçek bilgileri girip Taslak kaydet dediğinizde içerikler burada listelenir."
       />

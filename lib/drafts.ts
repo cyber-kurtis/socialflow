@@ -1,12 +1,14 @@
 "use client";
 
 import type {
+  PostStatus,
   PostType,
   SavedDraftMedia,
   SavedDraftPost,
   SocialAccount,
   UploadedMedia,
 } from "@/lib/types";
+import { simulatePublishing } from "@/lib/mock-publishing";
 
 export const draftsStorageKey = "socialflow.saved-drafts.v1";
 
@@ -109,4 +111,49 @@ export function updateDraftStatus(id: string, status: SavedDraftPost["status"]) 
   );
 
   writeDrafts(next);
+}
+
+export function updateDraft(id: string, updates: Partial<SavedDraftPost>) {
+  const now = new Date().toISOString();
+  const next = readDrafts().map((draft) =>
+    draft.id === id
+      ? {
+          ...draft,
+          ...updates,
+          updatedAt: now,
+        }
+      : draft,
+  );
+
+  writeDrafts(next);
+}
+
+export async function simulateDraftPublishing(id: string) {
+  const draft = readDrafts().find((item) => item.id === id);
+
+  if (!draft) {
+    return null;
+  }
+
+  const attemptAt = new Date().toISOString();
+  updateDraft(id, {
+    status: "publishing",
+    lastPublishingAttemptAt: attemptAt,
+    failureReason: undefined,
+    activityLogMessage: "Simulasyon yayina alma islemi baslatildi.",
+  });
+
+  const result = await simulatePublishing(draft.title);
+  const nextStatus: PostStatus = result.status;
+
+  updateDraft(id, {
+    status: nextStatus,
+    publishedAt: result.status === "published" ? new Date().toISOString() : undefined,
+    externalPostId: result.externalPostId,
+    externalPostUrl: result.externalPostUrl,
+    failureReason: result.failureReason,
+    activityLogMessage: result.activityLogMessage,
+  });
+
+  return result;
 }
