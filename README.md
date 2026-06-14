@@ -1,21 +1,20 @@
 # SocialFlow
 
-Instagram Business ekipleri için içerik hazırlama, onaylama, planlama ve mock yayınlama paneli.
+Instagram Business ekipleri için içerik hazırlama, onaylama, planlama ve yayınlama paneli.
 
-## İlk Faz
+## Özellikler
 
 - Next.js App Router, TypeScript ve Tailwind CSS
 - Sol menülü yönetim paneli
-- Demo dashboard
+- Dashboard, içerik takvimi, taslaklar, onay, program ve yayın geçmişi
 - Yeni gönderi oluşturma ekranı
-- Çoklu görsel yükleme
-- Görsel ön izleme
-- Sürükleyerek görsel sıralama
-- Caption, hashtag, tarih ve saat alanları
+- Çoklu görsel yükleme, ön izleme ve sürükleyerek sıralama
+- Caption, hashtag, ilk yorum, tarih ve saat alanları
 - Instagram gönderi ön izlemesi
-- Mock sosyal hesap, gönderi ve aktivite verileri
-- Gerçek Instagram/Meta API bağlantısı olmayan mock yayınlama servisi
-- Netlify için statik export yapılandırması
+- Tarayıcı içi simülasyon modu
+- Supabase Storage ile gerçek medya yükleme hazırlığı
+- Netlify Functions ile gerçek Instagram Graph API yayın endpointleri
+- Netlify Scheduled Function ile zamanlanmış yayın kuyruğu
 
 ## Yerel Çalıştırma
 
@@ -25,12 +24,6 @@ npm run dev
 ```
 
 Uygulama varsayılan olarak `http://localhost:3000` adresinde çalışır.
-
-Sunucusuz hızlı ön izleme için:
-
-```bash
-START_PREVIEW.cmd
-```
 
 ## Kontrol Komutları
 
@@ -42,18 +35,34 @@ npm run build
 
 ## Netlify
 
-Bu proje Netlify için statik çıktı üretir.
-
 - Build command: `npm run build`
 - Publish directory: `out`
+- Functions directory: `netlify/functions`
 - Node version: `22`
 
 Bu ayarlar `netlify.toml` dosyasında tanımlıdır.
 
-## Ortam Değişkenleri
+## Gerçek Yayın İçin Gerekenler
 
-`.env.example` dosyası Supabase için gerekli anahtar isimlerini gösterir. İlk fazda canlı Supabase bağlantısı yapılmadığı için değerler boş bırakılabilir.
+Netlify Environment Variables bölümüne şu değerler girilmelidir:
 
-## Sınırlar
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `SOCIALFLOW_ORGANIZATION_ID`
+- `SOCIALFLOW_SOCIAL_ACCOUNT_ID`
+- `META_INSTAGRAM_BUSINESS_ACCOUNT_ID`
+- `META_ACCESS_TOKEN`
+- İsteğe bağlı: `META_GRAPH_API_VERSION`
 
-Bu sürüm gerçek Instagram veya Meta API bağlantısı kurmaz, gerçek paylaşım yapmaz ve canlı veritabanına yazmaz.
+Uygulama içindeki `Ayarlar` ekranına ayrıca Supabase Project URL ve anon public key girilmelidir. Bu sadece tarayıcıdan Supabase Storage bucketına medya yüklemek için kullanılır.
+
+Supabase SQL Editor içinde migration dosyalarını sırayla çalıştırın:
+
+- `supabase/migrations/0001_initial_schema.sql`
+- `supabase/migrations/0002_storage_and_real_publishing.sql`
+
+## Instagram Koşulları
+
+Gerçek paylaşım için Instagram hesabı Business veya Creator olmalı, bir Facebook Page ile bağlı olmalı ve Meta uygulamasında Instagram Graph API yayın izinleri için geçerli access token bulunmalıdır.
+
+İlk gerçek sürüm görsel ve carousel paylaşımı destekler. Video/Reels yayınlama daha sonra ayrı işleme/polling akışıyla genişletilecektir.

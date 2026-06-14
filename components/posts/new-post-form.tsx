@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { getUsableAccounts, readAppSettings } from "@/lib/app-settings";
 import { saveDraft, simulateDraftPublishing } from "@/lib/drafts";
+import { publishNowReal, schedulePostReal } from "@/lib/real-publishing";
 import type { MockPublishResult, PostType, SocialAccount, UploadedMedia } from "@/lib/types";
 import { cn } from "@/lib/ui";
 
@@ -60,6 +61,7 @@ export function NewPostForm({ accounts }: NewPostFormProps) {
   const [submitState, setSubmitState] = useState<string | null>(null);
   const [publishResult, setPublishResult] = useState<MockPublishResult | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isRealPublishing, setIsRealPublishing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaItemsRef = useRef<UploadedMedia[]>([]);
 
@@ -236,6 +238,36 @@ export function NewPostForm({ accounts }: NewPostFormProps) {
 
     setSubmitState(`${message}: ${draft.title}`);
     window.setTimeout(() => setSubmitState(null), 2200);
+  }
+
+  async function handleRealPublishNow() {
+    setIsRealPublishing(true);
+    setSubmitState(null);
+
+    try {
+      const result = await publishNowReal(readAppSettings(), form, orderedMedia);
+      setSubmitState(`Gerçek paylaşım tamamlandı: ${result.result.externalPostId}`);
+    } catch (error) {
+      setSubmitState(error instanceof Error ? error.message : "Gerçek paylaşım başarısız oldu.");
+    } finally {
+      window.setTimeout(() => setSubmitState(null), 5200);
+      setIsRealPublishing(false);
+    }
+  }
+
+  async function handleRealSchedule() {
+    setIsRealPublishing(true);
+    setSubmitState(null);
+
+    try {
+      const result = await schedulePostReal(readAppSettings(), form, orderedMedia);
+      setSubmitState(`Gerçek programlama kaydedildi: ${result.postId}`);
+    } catch (error) {
+      setSubmitState(error instanceof Error ? error.message : "Gerçek programlama başarısız oldu.");
+    } finally {
+      window.setTimeout(() => setSubmitState(null), 5200);
+      setIsRealPublishing(false);
+    }
   }
 
   return (
@@ -453,6 +485,32 @@ export function NewPostForm({ accounts }: NewPostFormProps) {
           >
             <CalendarClock className="h-4 w-4" aria-hidden="true" />
             Direkt programla
+          </button>
+          <button
+            type="button"
+            className="focus-ring inline-flex items-center gap-2 rounded-md border border-brand-200 bg-white px-4 py-2 text-sm font-medium text-brand-700 hover:bg-brand-50 disabled:cursor-not-allowed disabled:opacity-70"
+            onClick={handleRealSchedule}
+            disabled={isRealPublishing}
+          >
+            {isRealPublishing ? (
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+            ) : (
+              <CalendarClock className="h-4 w-4" aria-hidden="true" />
+            )}
+            Gerçek programla
+          </button>
+          <button
+            type="button"
+            className="focus-ring inline-flex items-center gap-2 rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+            onClick={handleRealPublishNow}
+            disabled={isRealPublishing}
+          >
+            {isRealPublishing ? (
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+            ) : (
+              <Sparkles className="h-4 w-4" aria-hidden="true" />
+            )}
+            Gerçek paylaş
           </button>
           {submitState && (
             <span className="self-center rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">
