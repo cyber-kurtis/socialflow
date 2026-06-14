@@ -12,8 +12,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { getUsableAccounts, readAppSettings } from "@/lib/app-settings";
-import { saveDraft } from "@/lib/drafts";
-import { simulatePublishing } from "@/lib/mock-publishing";
+import { saveDraft, simulateDraftPublishing } from "@/lib/drafts";
 import type { MockPublishResult, PostType, SocialAccount, UploadedMedia } from "@/lib/types";
 import { cn } from "@/lib/ui";
 
@@ -172,11 +171,38 @@ export function NewPostForm({ accounts }: NewPostFormProps) {
     }
   }
 
-  async function handleSimulatePublish() {
+  async function handlePublishNow() {
+    if (!selectedAccount) {
+      setSubmitState("Önce Ayarlar bölümünden bir Instagram hesabı ekleyin");
+      window.setTimeout(() => setSubmitState(null), 2600);
+      return;
+    }
+
     setIsPublishing(true);
     setPublishResult(null);
-    const result = await simulatePublishing(form.title || "hazirlanan-gonderi");
+
+    const draft = saveDraft({
+      title: form.title,
+      account: selectedAccount,
+      postType: form.postType,
+      caption: form.caption,
+      hashtags: form.hashtags,
+      firstComment: form.firstComment,
+      publishDate: form.publishDate,
+      publishTime: form.publishTime,
+      timezone: form.timezone,
+      status: "scheduled",
+      mediaItems: orderedMedia,
+    });
+
+    const result = await simulateDraftPublishing(draft.id);
     setPublishResult(result);
+    setSubmitState(
+      result?.status === "published"
+        ? `Hemen paylaşım simüle edildi: ${draft.title}`
+        : `Simülasyon başarısız oldu: ${draft.title}`,
+    );
+    window.setTimeout(() => setSubmitState(null), 2600);
     setIsPublishing(false);
   }
 
@@ -426,7 +452,7 @@ export function NewPostForm({ accounts }: NewPostFormProps) {
             onClick={() => handleAction("scheduled")}
           >
             <CalendarClock className="h-4 w-4" aria-hidden="true" />
-            Programla
+            Direkt programla
           </button>
           {submitState && (
             <span className="self-center rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">
@@ -484,15 +510,15 @@ export function NewPostForm({ accounts }: NewPostFormProps) {
         <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-panel">
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-brand-600" aria-hidden="true" />
-            <h2 className="text-base font-semibold text-slate-950">Yayın simülasyonu</h2>
+            <h2 className="text-base font-semibold text-slate-950">Direkt paylaşım simülasyonu</h2>
           </div>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            Bu buton sadece test amaçlıdır; gerçek Instagram yayını veya Meta API bağlantısı yoktur.
+            Bu buton gönderiyi kaydeder, yayın simülasyonunu hemen çalıştırır ve sonucu Yayın geçmişi ekranına düşürür.
           </p>
           <button
             type="button"
             className="focus-ring mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-70"
-            onClick={handleSimulatePublish}
+            onClick={handlePublishNow}
             disabled={isPublishing}
           >
             {isPublishing ? (
@@ -500,7 +526,7 @@ export function NewPostForm({ accounts }: NewPostFormProps) {
             ) : (
               <Sparkles className="h-4 w-4" aria-hidden="true" />
             )}
-            Yayını Şimdi Simüle Et
+            Hemen paylaş / simüle et
           </button>
 
           {publishResult && (
