@@ -11,6 +11,7 @@ import {
   Sparkles,
   Trash2,
 } from "lucide-react";
+import { getUsableAccounts, readAppSettings } from "@/lib/app-settings";
 import { simulatePublishing } from "@/lib/mock-publishing";
 import type { MockPublishResult, PostType, SocialAccount, UploadedMedia } from "@/lib/types";
 import { cn } from "@/lib/ui";
@@ -32,14 +33,14 @@ type FormState = {
 };
 
 const initialFormState = (accountId: string): FormState => ({
-  title: "Yeni kampanya duyurusu",
+  title: "",
   accountId,
   postType: "carousel",
-  caption: "Yeni içerik planımız hazır. Detaylar için takipte kalın.",
-  hashtags: "#socialmedia #contentplanning #socialflow",
-  firstComment: "Sorularınızı yorumlara bırakabilirsiniz.",
-  publishDate: "2026-06-17",
-  publishTime: "10:00",
+  caption: "",
+  hashtags: "",
+  firstComment: "",
+  publishDate: "",
+  publishTime: "",
   timezone: "Europe/Istanbul",
 });
 
@@ -52,6 +53,7 @@ function createMediaId() {
 }
 
 export function NewPostForm({ accounts }: NewPostFormProps) {
+  const [availableAccounts, setAvailableAccounts] = useState<SocialAccount[]>(accounts);
   const [form, setForm] = useState<FormState>(() => initialFormState(accounts[0]?.id ?? ""));
   const [mediaItems, setMediaItems] = useState<UploadedMedia[]>([]);
   const [draggedId, setDraggedId] = useState<string | null>(null);
@@ -60,6 +62,31 @@ export function NewPostForm({ accounts }: NewPostFormProps) {
   const [isPublishing, setIsPublishing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaItemsRef = useRef<UploadedMedia[]>([]);
+
+  useEffect(() => {
+    function refreshSettings() {
+      const settings = readAppSettings();
+      const nextAccounts = getUsableAccounts(settings, accounts);
+
+      setAvailableAccounts(nextAccounts);
+      setForm((current) => ({
+        ...current,
+        accountId: nextAccounts.some((account) => account.id === current.accountId)
+          ? current.accountId
+          : nextAccounts[0]?.id ?? "",
+        timezone: settings.timezone || current.timezone,
+      }));
+    }
+
+    refreshSettings();
+    window.addEventListener("socialflow:settings-updated", refreshSettings);
+    window.addEventListener("storage", refreshSettings);
+
+    return () => {
+      window.removeEventListener("socialflow:settings-updated", refreshSettings);
+      window.removeEventListener("storage", refreshSettings);
+    };
+  }, [accounts]);
 
   useEffect(() => {
     mediaItemsRef.current = mediaItems;
@@ -72,8 +99,9 @@ export function NewPostForm({ accounts }: NewPostFormProps) {
   }, []);
 
   const selectedAccount = useMemo(
-    () => accounts.find((account) => account.id === form.accountId) ?? accounts[0],
-    [accounts, form.accountId],
+    () =>
+      availableAccounts.find((account) => account.id === form.accountId) ?? availableAccounts[0],
+    [availableAccounts, form.accountId],
   );
 
   const orderedMedia = useMemo(
@@ -146,7 +174,7 @@ export function NewPostForm({ accounts }: NewPostFormProps) {
   async function handleSimulatePublish() {
     setIsPublishing(true);
     setPublishResult(null);
-    const result = await simulatePublishing(form.title);
+    const result = await simulatePublishing(form.title || "hazirlanan-gonderi");
     setPublishResult(result);
     setIsPublishing(false);
   }
@@ -176,7 +204,7 @@ export function NewPostForm({ accounts }: NewPostFormProps) {
               value={form.accountId}
               onChange={(event) => updateForm("accountId", event.target.value)}
             >
-              {accounts.map((account) => (
+              {availableAccounts.map((account) => (
                 <option key={account.id} value={account.id}>
                   {account.brand} · {account.handle}
                 </option>
@@ -311,6 +339,7 @@ export function NewPostForm({ accounts }: NewPostFormProps) {
               className="focus-ring mt-1 min-h-32 w-full rounded-md border-slate-200"
               value={form.caption}
               onChange={(event) => updateForm("caption", event.target.value)}
+              placeholder="Instagram açıklamasını buraya yazın."
             />
           </label>
           <label className="block">
@@ -319,6 +348,7 @@ export function NewPostForm({ accounts }: NewPostFormProps) {
               className="focus-ring mt-1 w-full rounded-md border-slate-200"
               value={form.hashtags}
               onChange={(event) => updateForm("hashtags", event.target.value)}
+              placeholder="#marka #kampanya"
             />
           </label>
           <label className="block">
@@ -327,6 +357,7 @@ export function NewPostForm({ accounts }: NewPostFormProps) {
               className="focus-ring mt-1 min-h-24 w-full rounded-md border-slate-200"
               value={form.firstComment}
               onChange={(event) => updateForm("firstComment", event.target.value)}
+              placeholder="İlk yorumu buraya yazın."
             />
           </label>
           <label className="block max-w-xs">
@@ -338,6 +369,9 @@ export function NewPostForm({ accounts }: NewPostFormProps) {
             >
               <option>Europe/Istanbul</option>
               <option>UTC</option>
+              <option>Europe/London</option>
+              <option>Europe/Berlin</option>
+              <option>America/New_York</option>
             </select>
           </label>
         </section>
@@ -385,7 +419,7 @@ export function NewPostForm({ accounts }: NewPostFormProps) {
           <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-white">
             <div className="flex items-center gap-3 border-b border-slate-200 px-3 py-2">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">
-                {selectedAccount?.avatarFallback ?? "SF"}
+                {selectedAccount?.avatarFallback ?? "IG"}
               </div>
               <div>
                 <p className="text-sm font-semibold text-slate-950">{selectedAccount?.handle}</p>
@@ -407,11 +441,13 @@ export function NewPostForm({ accounts }: NewPostFormProps) {
             </div>
             <div className="space-y-2 p-3">
               <p className="text-sm text-slate-900">
-                <span className="font-semibold">{selectedAccount?.handle}</span> {form.caption}
+                <span className="font-semibold">{selectedAccount?.handle}</span>{" "}
+                {form.caption || "Caption yazıldığında burada görünecek."}
               </p>
-              <p className="text-sm text-brand-700">{form.hashtags}</p>
+              <p className="text-sm text-brand-700">{form.hashtags || "#hashtag"}</p>
               <p className="text-xs text-slate-500">
-                {form.publishDate} · {form.publishTime} · {form.timezone}
+                {form.publishDate || "Tarih seçilmedi"} · {form.publishTime || "Saat seçilmedi"} ·{" "}
+                {form.timezone}
               </p>
             </div>
           </div>
@@ -420,11 +456,10 @@ export function NewPostForm({ accounts }: NewPostFormProps) {
         <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-panel">
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-brand-600" aria-hidden="true" />
-            <h2 className="text-base font-semibold text-slate-950">Mock yayınlama</h2>
+            <h2 className="text-base font-semibold text-slate-950">Yayın simülasyonu</h2>
           </div>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            Bu buton sadece geliştirme simülasyonu yapar; gerçek Instagram yayını veya Meta API
-            bağlantısı kurulmaz.
+            Bu buton sadece test amaçlıdır; gerçek Instagram yayını veya Meta API bağlantısı yoktur.
           </p>
           <button
             type="button"
@@ -466,7 +501,9 @@ export function NewPostForm({ accounts }: NewPostFormProps) {
             <MessageSquareText className="h-5 w-5 text-slate-500" aria-hidden="true" />
             <h2 className="text-base font-semibold text-slate-950">İlk yorum</h2>
           </div>
-          <p className="mt-2 text-sm leading-6 text-slate-600">{form.firstComment}</p>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            {form.firstComment || "İlk yorum yazıldığında burada görünecek."}
+          </p>
         </section>
       </aside>
     </div>

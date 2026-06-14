@@ -20,12 +20,13 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-sm font-medium text-brand-600">Demo panel</p>
+          <p className="text-sm font-medium text-brand-600">Çalışma paneli</p>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950">
             Dashboard
           </h1>
           <p className="mt-1 text-sm text-slate-600">
-            SocialFlow simülasyon ortamında içerik akışının genel görünümü.
+            Gerçek firma ve hesap bilgilerinizi girdikten sonra içerik hazırlama akışını buradan
+            takip edebilirsiniz.
           </p>
         </div>
         <div className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 shadow-panel">
@@ -38,26 +39,26 @@ export default function DashboardPage() {
           icon={CalendarClock}
           label="Bu hafta planlanan"
           value={dashboardStats.scheduledThisWeek}
-          helper="3 marka hesabı"
+          helper="Hesaplarınızı Ayarlar'dan güncelleyin"
         />
         <MetricCard
           icon={Clock3}
           label="Onay bekleyen"
           value={dashboardStats.pendingApproval}
-          helper="En eski: bugün 11:30"
+          helper="Onay akışı sonraki fazda bağlanacak"
         />
         <MetricCard
           icon={AlertTriangle}
           label="Başarısız gönderiler"
           value={dashboardStats.failedPosts}
-          helper="Mock servis sonucu"
+          helper="Yayın bağlantısı henüz kapalı"
           tone="danger"
         />
         <MetricCard
           icon={CheckCircle2}
           label="Bu ay yayımlanan"
           value={dashboardStats.publishedThisMonth}
-          helper="Geçen aya göre +12%"
+          helper="Canlı veri bağlantısı bekleniyor"
           tone="success"
         />
       </section>
@@ -69,10 +70,12 @@ export default function DashboardPage() {
               <h2 className="text-base font-semibold text-slate-950">
                 Yaklaşan paylaşımlar
               </h2>
-              <p className="text-sm text-slate-500">İlk beş planlı içerik.</p>
+              <p className="text-sm text-slate-500">
+                Gerçek veri bağlantısından önce örnek akış görünümü.
+              </p>
             </div>
             <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700">
-              Demo veri
+              Hazırlık verisi
             </span>
           </div>
           <div className="mt-4 grid gap-3">

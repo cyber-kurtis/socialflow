@@ -1,11 +1,44 @@
+"use client";
+
 import type { ReactNode } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Bell, Building2 } from "lucide-react";
+import {
+  defaultAppSettings,
+  fallbackSocialAccount,
+  readAppSettings,
+  type AppSettings,
+} from "@/lib/app-settings";
 
 export function Topbar({
   children,
 }: Readonly<{
   children?: ReactNode;
 }>) {
+  const [settings, setSettings] = useState<AppSettings>(defaultAppSettings);
+
+  useEffect(() => {
+    function refreshSettings() {
+      setSettings(readAppSettings());
+    }
+
+    refreshSettings();
+    window.addEventListener("socialflow:settings-updated", refreshSettings);
+    window.addEventListener("storage", refreshSettings);
+
+    return () => {
+      window.removeEventListener("socialflow:settings-updated", refreshSettings);
+      window.removeEventListener("storage", refreshSettings);
+    };
+  }, []);
+
+  const accounts = useMemo(
+    () => (settings.socialAccounts.length > 0 ? settings.socialAccounts : [fallbackSocialAccount]),
+    [settings.socialAccounts],
+  );
+  const organizationLabel = settings.organizationName || "Organizasyon ekleyin";
+  const initials = settings.userInitials || "AK";
+
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200 bg-slate-50/95 backdrop-blur">
       <div className="flex h-16 items-center gap-3 px-4 sm:px-6 lg:px-8">
@@ -15,16 +48,15 @@ export function Topbar({
             <Building2 className="h-4 w-4 text-slate-400" aria-hidden="true" />
             <span className="sr-only">Organizasyon</span>
             <select className="focus-ring rounded-md border-slate-200 bg-white py-2 pl-3 pr-8 text-sm text-slate-700 shadow-panel">
-              <option>SocialFlow Demo</option>
-              <option>Studio Nova</option>
+              <option>{organizationLabel}</option>
             </select>
           </label>
           <label className="hidden text-sm text-slate-600 sm:block">
             <span className="sr-only">Instagram hesabı</span>
             <select className="focus-ring rounded-md border-slate-200 bg-white py-2 pl-3 pr-8 text-sm text-slate-700 shadow-panel">
-              <option>@socialflow_tr</option>
-              <option>@studionova</option>
-              <option>@mavikutu</option>
+              {accounts.map((account) => (
+                <option key={account.id}>{account.handle}</option>
+              ))}
             </select>
           </label>
           <button
@@ -35,7 +67,7 @@ export function Topbar({
             <Bell className="h-5 w-5" aria-hidden="true" />
           </button>
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-sm font-semibold text-white">
-            AK
+            {initials}
           </div>
         </div>
       </div>
