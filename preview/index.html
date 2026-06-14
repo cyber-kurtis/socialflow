@@ -1,0 +1,789 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SocialFlow Preview</title>
+    <style>
+      :root {
+        --bg: #f6f8fb;
+        --panel: #ffffff;
+        --border: #dfe5ef;
+        --text: #172033;
+        --muted: #667085;
+        --brand: #2473d4;
+        --brand-dark: #1c5fb5;
+        --soft: #eef7ff;
+        --danger: #d92d20;
+        --ok: #039855;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      button,
+      input,
+      select,
+      textarea {
+        font: inherit;
+      }
+
+      .app {
+        min-height: 100vh;
+        display: grid;
+        grid-template-columns: 280px minmax(0, 1fr);
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        background: #fff;
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .brand {
+        height: 72px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0 18px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .logo {
+        width: 42px;
+        height: 42px;
+        border-radius: 8px;
+        display: grid;
+        place-items: center;
+        background: var(--brand);
+        color: #fff;
+        font-weight: 800;
+      }
+
+      .brand strong {
+        display: block;
+      }
+
+      .brand span {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 2px;
+      }
+
+      .nav {
+        padding: 16px 12px;
+        display: grid;
+        gap: 6px;
+      }
+
+      .nav a {
+        text-decoration: none;
+        color: #465166;
+        padding: 11px 12px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .nav a.active,
+      .nav a:hover {
+        background: var(--soft);
+        color: var(--brand-dark);
+      }
+
+      .mode {
+        margin: auto 12px 12px;
+        background: #f8fafc;
+        border-radius: 8px;
+        padding: 14px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .mode strong {
+        display: block;
+        color: var(--text);
+        margin-bottom: 4px;
+      }
+
+      .main {
+        min-width: 0;
+      }
+
+      .topbar {
+        height: 72px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: rgb(246 248 251 / 0.94);
+        border-bottom: 1px solid var(--border);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 12px;
+        padding: 0 28px;
+      }
+
+      .topbar select,
+      .field input,
+      .field select,
+      .field textarea {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: #fff;
+        color: var(--text);
+      }
+
+      .topbar select {
+        padding: 9px 34px 9px 12px;
+      }
+
+      .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 999px;
+        background: #111827;
+        color: white;
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+        font-size: 14px;
+      }
+
+      .content {
+        max-width: 1360px;
+        margin: 0 auto;
+        padding: 28px;
+      }
+
+      .page-title {
+        margin-bottom: 24px;
+      }
+
+      .eyebrow {
+        color: var(--brand-dark);
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      h1 {
+        margin: 5px 0 6px;
+        font-size: 28px;
+        line-height: 1.2;
+      }
+
+      p {
+        margin: 0;
+      }
+
+      .hint {
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .dashboard {
+        display: none;
+      }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .card,
+      .form,
+      .preview-card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        box-shadow: 0 1px 2px rgb(15 23 42 / 0.06);
+      }
+
+      .card {
+        padding: 20px;
+      }
+
+      .metric-label {
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .metric-value {
+        margin-top: 10px;
+        font-size: 34px;
+        font-weight: 800;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 390px;
+        gap: 24px;
+      }
+
+      .form {
+        padding: 22px;
+        display: grid;
+        gap: 24px;
+      }
+
+      .fields {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .field label,
+      .section-title {
+        display: block;
+        margin-bottom: 7px;
+        color: #344054;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .field input,
+      .field select,
+      .field textarea {
+        width: 100%;
+        padding: 10px 12px;
+      }
+
+      textarea {
+        resize: vertical;
+      }
+
+      .media-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        margin-bottom: 14px;
+      }
+
+      .btn {
+        border: 0;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      .btn.primary {
+        color: white;
+        background: var(--brand);
+      }
+
+      .btn.dark {
+        color: white;
+        background: #111827;
+      }
+
+      .btn.light {
+        color: #344054;
+        background: #fff;
+        border: 1px solid var(--border);
+      }
+
+      .drop {
+        width: 100%;
+        min-height: 190px;
+        border: 1px dashed #b8c2d4;
+        border-radius: 10px;
+        background: #f8fafc;
+        color: var(--muted);
+        display: grid;
+        place-items: center;
+        text-align: center;
+        cursor: pointer;
+      }
+
+      .media-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .media-item {
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: #fff;
+        cursor: grab;
+      }
+
+      .media-item.dragging {
+        opacity: 0.55;
+        border-color: var(--brand);
+      }
+
+      .thumb {
+        aspect-ratio: 1;
+        background-size: cover;
+        background-position: center;
+        background-color: #eef2f7;
+      }
+
+      .media-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px;
+      }
+
+      .media-name {
+        min-width: 0;
+        flex: 1;
+        font-size: 13px;
+        font-weight: 700;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .delete {
+        border: 0;
+        background: transparent;
+        color: var(--danger);
+        cursor: pointer;
+        font-weight: 900;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        border-top: 1px solid var(--border);
+        padding-top: 18px;
+      }
+
+      .right {
+        display: grid;
+        align-content: start;
+        gap: 16px;
+      }
+
+      .preview-card {
+        padding: 18px;
+      }
+
+      .insta {
+        margin-top: 14px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+        background: #fff;
+      }
+
+      .insta-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .insta-media {
+        aspect-ratio: 1;
+        background: #eef2f7;
+        background-size: cover;
+        background-position: center;
+        display: grid;
+        place-items: center;
+        color: var(--muted);
+        text-align: center;
+        padding: 20px;
+        font-size: 14px;
+      }
+
+      .insta-body {
+        padding: 12px;
+        display: grid;
+        gap: 8px;
+        font-size: 14px;
+        line-height: 1.45;
+      }
+
+      .tag {
+        color: var(--brand-dark);
+      }
+
+      .notice {
+        padding: 12px;
+        border-radius: 8px;
+        background: #ecfdf3;
+        color: #027a48;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      @media (max-width: 1080px) {
+        .app {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          position: static;
+          height: auto;
+        }
+
+        .nav {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .mode {
+          margin-top: 0;
+        }
+
+        .grid,
+        .metrics {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .content {
+          padding: 18px;
+        }
+
+        .fields,
+        .media-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .topbar {
+          justify-content: flex-start;
+          overflow-x: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="logo">SF</div>
+          <div>
+            <strong>SocialFlow</strong>
+            <span>Yönetim paneli</span>
+          </div>
+        </div>
+        <nav class="nav">
+          <a href="#dashboard">⌂ Dashboard</a>
+          <a class="active" href="#new-post">＋ Yeni gönderi</a>
+          <a href="#calendar">□ İçerik takvimi</a>
+          <a href="#drafts">☰ Taslaklar</a>
+          <a href="#approval">✓ Onay bekleyenler</a>
+          <a href="#scheduled">◷ Programlanmış</a>
+          <a href="#history">↺ Yayın geçmişi</a>
+          <a href="#accounts">◉ Instagram hesapları</a>
+          <a href="#users">♙ Kullanıcılar</a>
+          <a href="#settings">⚙ Ayarlar</a>
+        </nav>
+        <div class="mode">
+          <strong>Simülasyon modu</strong>
+          Gerçek Instagram veya Meta API bağlantısı yok. Bu ekran mock verilerle çalışır.
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <select>
+            <option>SocialFlow Demo</option>
+            <option>Studio Nova</option>
+          </select>
+          <select id="top-account">
+            <option>@socialflow_tr</option>
+            <option>@studionova</option>
+            <option>@mavikutu</option>
+          </select>
+          <div class="avatar">AK</div>
+        </header>
+
+        <div class="content">
+          <section class="dashboard" id="dashboard">
+            <div class="page-title">
+              <div class="eyebrow">Demo panel</div>
+              <h1>Dashboard</h1>
+              <p class="hint">Planlanan ve onay bekleyen içerikler için hızlı görünüm.</p>
+            </div>
+            <div class="metrics">
+              <div class="card">
+                <div class="metric-label">Bu hafta planlanan</div>
+                <div class="metric-value">12</div>
+                <p class="hint">3 marka hesabı</p>
+              </div>
+              <div class="card">
+                <div class="metric-label">Onay bekleyen</div>
+                <div class="metric-value">5</div>
+                <p class="hint">En eski: bugün 11:30</p>
+              </div>
+              <div class="card">
+                <div class="metric-label">Başarısız gönderiler</div>
+                <div class="metric-value">1</div>
+                <p class="hint">Mock servis sonucu</p>
+              </div>
+              <div class="card">
+                <div class="metric-label">Bu ay yayımlanan</div>
+                <div class="metric-value">38</div>
+                <p class="hint">Geçen aya göre +12%</p>
+              </div>
+            </div>
+          </section>
+
+          <section id="new-post">
+            <div class="page-title">
+              <div class="eyebrow">İçerik üretimi</div>
+              <h1>Yeni gönderi oluştur</h1>
+              <p class="hint">
+                Medyaları yükleyin, sıralayın, Instagram ön izlemesini kontrol edin.
+              </p>
+            </div>
+
+            <div class="grid">
+              <form class="form">
+                <div class="fields">
+                  <div class="field">
+                    <label>Sistem içi başlık</label>
+                    <input id="title" value="Yeni kampanya duyurusu" />
+                  </div>
+                  <div class="field">
+                    <label>Marka / Instagram hesabı</label>
+                    <select id="account">
+                      <option value="@socialflow_tr|SocialFlow|SF">SocialFlow · @socialflow_tr</option>
+                      <option value="@studionova|Studio Nova|SN">Studio Nova · @studionova</option>
+                      <option value="@mavikutu|Mavi Kutu|MK">Mavi Kutu · @mavikutu</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label>Gönderi türü</label>
+                    <select>
+                      <option>Kaydırmalı carousel</option>
+                      <option>Tek görsel</option>
+                      <option>Video</option>
+                      <option>Reels</option>
+                    </select>
+                  </div>
+                  <div class="fields" style="gap: 10px">
+                    <div class="field">
+                      <label>Yayın tarihi</label>
+                      <input id="date" type="date" value="2026-06-17" />
+                    </div>
+                    <div class="field">
+                      <label>Yayın saati</label>
+                      <input id="time" type="time" value="10:00" />
+                    </div>
+                  </div>
+                </div>
+
+                <section>
+                  <div class="media-head">
+                    <div>
+                      <div class="section-title">Medya yükleme</div>
+                      <p class="hint">Birden fazla görsel seçin; kartları sürükleyerek sıralayın.</p>
+                    </div>
+                    <button class="btn dark" type="button" id="pick">Görsel ekle</button>
+                    <input id="files" type="file" accept="image/*" multiple hidden />
+                  </div>
+                  <button class="drop" type="button" id="drop">
+                    <span>
+                      <strong>Çoklu görsel yüklemek için tıklayın</strong><br />
+                      Ön izleme ve sıralama tarayıcı içinde yapılır.
+                    </span>
+                  </button>
+                  <div class="media-grid" id="media"></div>
+                </section>
+
+                <div class="field">
+                  <label>Caption</label>
+                  <textarea id="caption" rows="5">Yeni içerik planımız hazır. Detaylar için takipte kalın.</textarea>
+                </div>
+                <div class="field">
+                  <label>Hashtag</label>
+                  <input id="hashtags" value="#socialmedia #contentplanning #socialflow" />
+                </div>
+                <div class="field">
+                  <label>İlk yorum</label>
+                  <textarea id="comment" rows="3">Sorularınızı yorumlara bırakabilirsiniz.</textarea>
+                </div>
+                <div class="actions">
+                  <button class="btn light" type="button">Taslak kaydet</button>
+                  <button class="btn primary" type="button">Onaya gönder</button>
+                  <button class="btn dark" type="button">Programla</button>
+                </div>
+              </form>
+
+              <aside class="right">
+                <section class="preview-card">
+                  <strong>Instagram ön izlemesi</strong>
+                  <div class="insta">
+                    <div class="insta-head">
+                      <div class="avatar" id="account-avatar">SF</div>
+                      <div>
+                        <strong id="account-handle">@socialflow_tr</strong>
+                        <p class="hint" id="account-brand">SocialFlow</p>
+                      </div>
+                    </div>
+                    <div class="insta-media" id="insta-media">
+                      Ön izleme için en az bir görsel ekleyin.
+                    </div>
+                    <div class="insta-body">
+                      <div><strong id="caption-handle">@socialflow_tr</strong> <span id="caption-preview"></span></div>
+                      <div class="tag" id="hashtags-preview"></div>
+                      <div class="hint" id="schedule-preview"></div>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="preview-card">
+                  <strong>Mock yayınlama</strong>
+                  <p class="hint" style="margin-top: 8px">
+                    Bu alan sadece simülasyon yapar; gerçek Instagram bağlantısı yoktur.
+                  </p>
+                  <button class="btn primary" type="button" id="simulate" style="width: 100%; margin-top: 14px">
+                    Yayını Şimdi Simüle Et
+                  </button>
+                  <div class="notice" id="result" style="display: none; margin-top: 14px"></div>
+                </section>
+              </aside>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      const filesInput = document.querySelector("#files");
+      const pick = document.querySelector("#pick");
+      const drop = document.querySelector("#drop");
+      const media = document.querySelector("#media");
+      const instaMedia = document.querySelector("#insta-media");
+      const account = document.querySelector("#account");
+      const accountAvatar = document.querySelector("#account-avatar");
+      const accountHandle = document.querySelector("#account-handle");
+      const accountBrand = document.querySelector("#account-brand");
+      const captionHandle = document.querySelector("#caption-handle");
+      const caption = document.querySelector("#caption");
+      const hashtags = document.querySelector("#hashtags");
+      const date = document.querySelector("#date");
+      const time = document.querySelector("#time");
+      const captionPreview = document.querySelector("#caption-preview");
+      const hashtagsPreview = document.querySelector("#hashtags-preview");
+      const schedulePreview = document.querySelector("#schedule-preview");
+      const result = document.querySelector("#result");
+      let items = [];
+      let draggedId = null;
+
+      function render() {
+        media.innerHTML = "";
+        drop.style.display = items.length ? "none" : "grid";
+
+        items.forEach((item, index) => {
+          const el = document.createElement("div");
+          el.className = "media-item";
+          el.draggable = true;
+          el.dataset.id = item.id;
+          el.innerHTML = `
+            <div class="thumb" style="background-image:url('${item.url}')"></div>
+            <div class="media-meta">
+              <span>☰</span>
+              <div class="media-name">${index + 1}. ${item.name}</div>
+              <button class="delete" type="button">×</button>
+            </div>
+          `;
+          el.addEventListener("dragstart", () => {
+            draggedId = item.id;
+            el.classList.add("dragging");
+          });
+          el.addEventListener("dragend", () => {
+            draggedId = null;
+            el.classList.remove("dragging");
+          });
+          el.addEventListener("dragover", (event) => event.preventDefault());
+          el.addEventListener("drop", (event) => {
+            event.preventDefault();
+            if (!draggedId || draggedId === item.id) return;
+            const from = items.findIndex((entry) => entry.id === draggedId);
+            const to = items.findIndex((entry) => entry.id === item.id);
+            const [moved] = items.splice(from, 1);
+            items.splice(to, 0, moved);
+            render();
+          });
+          el.querySelector(".delete").addEventListener("click", () => {
+            URL.revokeObjectURL(item.url);
+            items = items.filter((entry) => entry.id !== item.id);
+            render();
+          });
+          media.appendChild(el);
+        });
+
+        if (items[0]) {
+          instaMedia.textContent = "";
+          instaMedia.style.backgroundImage = `url('${items[0].url}')`;
+        } else {
+          instaMedia.style.backgroundImage = "";
+          instaMedia.textContent = "Ön izleme için en az bir görsel ekleyin.";
+        }
+        renderText();
+      }
+
+      function renderText() {
+        const [handle, brand, avatar] = account.value.split("|");
+        accountAvatar.textContent = avatar;
+        accountHandle.textContent = handle;
+        accountBrand.textContent = brand;
+        captionHandle.textContent = handle;
+        captionPreview.textContent = caption.value;
+        hashtagsPreview.textContent = hashtags.value;
+        schedulePreview.textContent = `${date.value} · ${time.value} · Europe/Istanbul`;
+      }
+
+      function addFiles(fileList) {
+        [...fileList].forEach((file) => {
+          items.push({
+            id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+            name: file.name,
+            url: URL.createObjectURL(file),
+          });
+        });
+        render();
+      }
+
+      pick.addEventListener("click", () => filesInput.click());
+      drop.addEventListener("click", () => filesInput.click());
+      filesInput.addEventListener("change", (event) => {
+        addFiles(event.target.files);
+        event.target.value = "";
+      });
+      [account, caption, hashtags, date, time].forEach((el) => {
+        el.addEventListener("input", renderText);
+        el.addEventListener("change", renderText);
+      });
+      document.querySelector("#simulate").addEventListener("click", () => {
+        result.style.display = "block";
+        result.textContent = "Mock yayın başarılı: sahte external_post_id ve activity_logs kaydı üretildi.";
+      });
+      renderText();
+    </script>
+  </body>
+</html>
