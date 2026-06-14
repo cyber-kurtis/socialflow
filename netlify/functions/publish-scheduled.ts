@@ -101,5 +101,5 @@ const publishScheduled = async () => {
 export default publishScheduled;
 
 export const config: Config = {
-  schedule: "*/5 * * * *",
+  schedule: "*/30 * * * *",
 };
