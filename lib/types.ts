@@ -1,5 +1,17 @@
 export type UserRole = "admin" | "editor" | "approver" | "viewer";
 
+export type TeamMemberStatus = "active" | "invited" | "disabled";
+
+export type TeamMember = {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  status: TeamMemberStatus;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type PostStatus =
   | "draft"
   | "pending_approval"
